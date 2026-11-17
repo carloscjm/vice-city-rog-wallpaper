@@ -3,19 +3,30 @@
     <uses-feature android:name="android.software.live_wallpaper" android:required="true" />
     <application
         android:allowBackup="false"
-        android:icon="@drawable/preview"
-        android:label="Vice City ROG Wallpaper"
+        android:icon="@drawable/pack_preview"
+        android:label="Vice City ROG"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
+        <!-- A MESMA Activity e o ponto de entrada do aplicativo e do icon pack. -->
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter><action android:name="com.novalauncher.THEME" /></intent-filter>
+            <intent-filter><action android:name="org.adw.launcher.THEMES" /></intent-filter>
+            <intent-filter><action android:name="com.anddoes.launcher.THEME" /></intent-filter>
+            <intent-filter><action android:name="ch.deletescape.lawnchair.ICONPACK" /></intent-filter>
+            <intent-filter><action android:name="com.gau.go.launcherex.theme" /></intent-filter>
+            <intent-filter><action android:name="com.dlto.atom.launcher.THEME" /></intent-filter>
+            <intent-filter><action android:name="com.asus.launcher.THEME" /></intent-filter>
         </activity>
+
+        <!-- Wallpaper V3 permanece com o mesmo package/service, para nao duplicar apps. -->
         <service
             android:name=".ViceCityWallpaperService"
             android:exported="true"
-            android:label="Vice City ROG — Bloqueio animado"
+            android:label="Vice City ROG - Wallpaper Animado"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
