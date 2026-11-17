@@ -1,41 +1,86 @@
-name: Compilar icon pack Vice City - Rosa Neon
+name: Vice City ROG - Tema Completo (Wallpaper + Icones)
+
 on:
   push:
     branches: [main]
-    paths:
-      - 'ViceCityIconPackProject.zip'
-      - '.github/workflows/build-icon-pack.yml'
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Java 17
+      - name: Baixar arquivos do repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Android SDK
+
+      - name: Configurar Android SDK
         uses: android-actions/setup-android@v4
-      - name: Gradle 8.9
+
+      - name: Configurar Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: SDK Android 35
+
+      - name: Instalar Android SDK 35
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
-      - name: Descompactar projeto icon pack
+
+      - name: Montar aplicativo unico (wallpaper V3 + moldura rosa neon)
+        shell: bash
         run: |
-          test -f ViceCityIconPackProject.zip
-          unzip -q -o ViceCityIconPackProject.zip -d .
-          test -f ViceCityIconPackNeonProject/app/build.gradle
-      - name: Compilar Icon Pack
-        run: gradle -p ViceCityIconPackNeonProject --no-daemon :app:assembleDebug --stacktrace
-      - name: Disponibilizar Icon Pack APK
+          set -euo pipefail
+          # Valida os recursos ja presentes na raiz do repositorio.
+          for file in MainActivity.java ViceCityWallpaperService.java AndroidManifest.xml \
+            home.jpg preview.jpg vice_city_lock_anim.webp strings.xml \
+            vice_city_wallpaper.xml 'build (1).gradle' build.gradle \
+            ViceCityIconPackProject.zip settings.gradle gradle.properties; do
+            test -s "$file" || { echo "Arquivo ausente: $file"; exit 1; }
+          done
+
+          mkdir -p app/src/main/java/com/vicecityrog/wallpaper
+          mkdir -p app/src/main/res/drawable-nodpi
+          mkdir -p app/src/main/res/raw
+          mkdir -p app/src/main/res/xml
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/assets
+
+          cp MainActivity.java ViceCityWallpaperService.java app/src/main/java/com/vicecityrog/wallpaper/
+          cp AndroidManifest.xml app/src/main/AndroidManifest.xml
+          cp home.jpg preview.jpg app/src/main/res/drawable-nodpi/
+          cp vice_city_lock_anim.webp app/src/main/res/raw/
+          cp vice_city_wallpaper.xml app/src/main/res/xml/
+          cp strings.xml app/src/main/res/values/
+
+          # Inclui os recursos do icon pack no MESMO app; nao gera segundo APK.
+          unzip -q -o ViceCityIconPackProject.zip -d /tmp/vice-city-icons
+          pack=/tmp/vice-city-icons/ViceCityIconPackNeonProject/app/src/main
+          test -s "$pack/res/drawable-nodpi/iconupon.png"
+          test -s "$pack/assets/appfilter.xml"
+          cp "$pack"/res/drawable-nodpi/*.png app/src/main/res/drawable-nodpi/
+          cp "$pack"/assets/appfilter.xml "$pack"/assets/drawable.xml app/src/main/assets/
+          cp "$pack"/res/xml/appfilter.xml "$pack"/res/xml/drawable.xml app/src/main/res/xml/
+
+          # Preserva o applicationId do wallpaper ja instalado no ROG Phone 5.
+          cp build.gradle app/build.gradle
+          cp 'build (1).gradle' build.gradle
+          sed -i "s/versionCode 1/versionCode 4/; s/versionName '1.0'/versionName '4.0'/" app/build.gradle
+          grep -q 'versionCode 4' app/build.gradle
+          grep -q "versionName '4.0'" app/build.gradle
+          grep -q 'com.vicecityrog.wallpaper' app/build.gradle
+
+      - name: Compilar APK unico
+        run: gradle --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Publicar Vice City ROG tema completo
         uses: actions/upload-artifact@v4
         with:
-          name: ViceCity-Rosa-Neon-APK
-          path: ViceCityIconPackNeonProject/app/build/outputs/apk/debug/app-debug.apk
+          name: ViceCityROG-TemaCompleto-V4
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
