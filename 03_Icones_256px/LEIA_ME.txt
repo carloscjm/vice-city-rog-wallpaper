@@ -1,0 +1,1 @@
+Pacote visual Vice City ROG. Cada PNG é um ícone individual (256x256) para uso em launchers/pacotes compatíveis. Estes PNGs não alteram automaticamente os ícones do ASUS Launcher.
