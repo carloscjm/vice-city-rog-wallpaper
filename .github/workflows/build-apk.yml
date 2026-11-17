@@ -22,7 +22,7 @@ jobs:
           java-version: '17'
 
       - name: Configurar Android SDK
-        uses: android-actions/setup-android@v4
+        uses: android-actions/setup-android@v3
 
       - name: Configurar Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
@@ -48,13 +48,16 @@ jobs:
           cp AndroidManifest.xml app/src/main/AndroidManifest.xml
           cp home.jpg app/src/main/res/drawable-nodpi/home.jpg
           cp preview.jpg app/src/main/res/drawable-nodpi/preview.jpg
-          cp vice_city_lock.mp4 app/src/main/res/raw/vice_city_lock.mp4
+          cp vice_city_lock_anim.webp app/src/main/res/raw/vice_city_lock_anim.webp
           cp strings.xml app/src/main/res/values/strings.xml
           cp vice_city_wallpaper.xml app/src/main/res/xml/vice_city_wallpaper.xml
 
           # build.gradle (atual) e do app; build (1).gradle e do projeto raiz.
           cp build.gradle app/build.gradle
           cp 'build (1).gradle' build.gradle
+
+          # Marcar esta compilacao como v3 para facilitar a verificacao via ADB.
+          sed -i "s/versionCode 1/versionCode 3/; s/versionName '1.0'/versionName '3.0'/" app/build.gradle
 
       - name: Compilar APK
         run: gradle --no-daemon :app:assembleDebug --stacktrace
