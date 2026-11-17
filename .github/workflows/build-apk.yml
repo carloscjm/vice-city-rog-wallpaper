@@ -1,70 +1,41 @@
-name: Compilar Vice City ROG APK
-
+name: Compilar icon pack Vice City - Rosa Neon
 on:
   push:
     branches: [main]
+    paths:
+      - 'ViceCityIconPackProject.zip'
+      - '.github/workflows/build-icon-pack.yml'
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Baixar arquivos do repositorio
-        uses: actions/checkout@v4
-
-      - name: Configurar Java 17
+      - uses: actions/checkout@v4
+      - name: Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Configurar Android SDK
+      - name: Android SDK
         uses: android-actions/setup-android@v4
-
-      - name: Configurar Gradle 8.9
+      - name: Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
-      - name: Instalar Android SDK 35
+      - name: SDK Android 35
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
-
-      - name: Montar estrutura Android a partir dos arquivos enviados
-        shell: bash
+      - name: Descompactar projeto icon pack
         run: |
-          set -euo pipefail
-          mkdir -p app/src/main/java/com/vicecityrog/wallpaper
-          mkdir -p app/src/main/res/drawable-nodpi
-          mkdir -p app/src/main/res/raw
-          mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/xml
-
-          # Os arquivos foram enviados pela interface web na raiz do repositorio.
-          cp MainActivity.java app/src/main/java/com/vicecityrog/wallpaper/
-          cp ViceCityWallpaperService.java app/src/main/java/com/vicecityrog/wallpaper/
-          cp AndroidManifest.xml app/src/main/AndroidManifest.xml
-          cp home.jpg app/src/main/res/drawable-nodpi/home.jpg
-          cp preview.jpg app/src/main/res/drawable-nodpi/preview.jpg
-          cp vice_city_lock_anim.webp app/src/main/res/raw/vice_city_lock_anim.webp
-          cp strings.xml app/src/main/res/values/strings.xml
-          cp vice_city_wallpaper.xml app/src/main/res/xml/vice_city_wallpaper.xml
-
-          # build.gradle (atual) e do app; build (1).gradle e do projeto raiz.
-          cp build.gradle app/build.gradle
-          cp 'build (1).gradle' build.gradle
-
-          # Marcar esta compilacao como v3 para facilitar a verificacao via ADB.
-          sed -i "s/versionCode 1/versionCode 3/; s/versionName '1.0'/versionName '3.0'/" app/build.gradle
-
-      - name: Compilar APK
-        run: gradle --no-daemon :app:assembleDebug --stacktrace
-
-      - name: Disponibilizar APK
+          test -f ViceCityIconPackProject.zip
+          unzip -q -o ViceCityIconPackProject.zip -d .
+          test -f ViceCityIconPackNeonProject/app/build.gradle
+      - name: Compilar Icon Pack
+        run: gradle -p ViceCityIconPackNeonProject --no-daemon :app:assembleDebug --stacktrace
+      - name: Disponibilizar Icon Pack APK
         uses: actions/upload-artifact@v4
         with:
-          name: ViceCityROG-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: ViceCity-Rosa-Neon-APK
+          path: ViceCityIconPackNeonProject/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
