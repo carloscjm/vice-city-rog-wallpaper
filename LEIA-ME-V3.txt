@@ -1,0 +1,38 @@
+Vice City ROG - CORRECAO V3 (17/11/2026)
+
+Diagnostico do ROG Phone 5:
+- Tela de bloqueio foi detectada: animado=true, bloqueado=true.
+- MediaPlayer.prepareAsync() retornou IllegalStateException.
+- Versoes anteriores tentavam usar MediaPlayer e Canvas na mesma Surface.
+
+Esta V3 usa WebP animado decodificado pelo proprio Android (ImageDecoder +
+AnimatedImageDrawable), desenhado na mesma Surface por Canvas, sem MediaPlayer.
+WebP: 480x1088, 120 quadros (~12 fps), 10 s, 2,2 MB.
+
+PUBLICAR NO GITHUB (repo carloscjm/vice-city-rog-wallpaper)
+1. Enviar estes dois arquivos NA RAIZ, substituindo o .java existente:
+   - ViceCityWallpaperService.java
+   - vice_city_lock_anim.webp
+2. Editar .github/workflows/build-apk.yml (na pasta certa) e substituir
+   o conteúdo pelo build-apk.yml deste ZIP. Comitar no branch main.
+3. Abrir GitHub Actions, aguardar build ficar verde, baixar Artifact.
+4. Instalar app-debug.apk por ADB (se assinatura de debug mudou, desinstalar
+   antes o app com.vicecityrog.wallpaper e reinstalar).
+5. Validar versao: adb shell dumpsys package com.vicecityrog.wallpaper | findstr version
+   -> versionName=3.0 esperado.
+
+TESTES
+- Na tela de visualização do papel de parede deve aparecer ANIMACAO.
+- No bloqueio (tela acesa) deve aparecer ANIMACAO.
+- Desbloqueado, deve aparecer a imagem estatica.
+- Ao apagar a tela, nao deve renderizar continuamente.
+
+SE AINDA FALHAR
+PowerShell: & 'C:\platform-tools\adb.exe' logcat -c
+Reproduza o erro. Depois:
+& 'C:\platform-tools\adb.exe' logcat -d -s 'ViceCityROG:V' '*:S'
+
+ATENCAO: Codigo nao foi testado em hardware real. V3 usa decodificacao de
+imagens animadas pelo Android e pode ter consumo diferente do video H.264.
+Nao exige root, nem altera arquivos de sistema. O GitHub repo esta publico;
+considere mudar a visibilidade para privado se quiser manter as artes privadas.
